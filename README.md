@@ -186,8 +186,3 @@ The backend implements:
 
 Developed as a collaborative Spring Boot backend project following modern Java development practices.
 
----
-
-# 📄 License
-
-This project is intended for educational and portfolio purposes.
