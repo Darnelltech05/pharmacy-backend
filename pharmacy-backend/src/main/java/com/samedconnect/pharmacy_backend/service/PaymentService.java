@@ -72,6 +72,29 @@ public class PaymentService {
 
         return mapToResponse(payment);
     }
+    @Transactional
+    public PaymentResponse updatePaymentStatus(Long id, Payment.PaymentStatus status) {
+
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Payment not found with id: " + id));
+
+        payment.setPaymentStatus(status);
+
+        Payment updatedPayment = paymentRepository.save(payment);
+
+        return mapToResponse(updatedPayment);
+    }
+
+    @Transactional
+    public void deletePayment(Long id) {
+
+        Payment payment = paymentRepository.findById(id)
+                .orElseThrow(() ->
+                        new ResourceNotFoundException("Payment not found with id: " + id));
+
+        paymentRepository.delete(payment);
+    }
 
     private PaymentResponse mapToResponse(Payment payment) {
 

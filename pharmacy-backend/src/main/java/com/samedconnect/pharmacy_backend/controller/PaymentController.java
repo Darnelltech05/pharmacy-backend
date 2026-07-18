@@ -2,6 +2,7 @@ package com.samedconnect.pharmacy_backend.controller;
 
 import com.samedconnect.pharmacy_backend.dto.request.CreatePaymentRequest;
 import com.samedconnect.pharmacy_backend.dto.response.PaymentResponse;
+import com.samedconnect.pharmacy_backend.entity.Payment;
 import com.samedconnect.pharmacy_backend.service.PaymentService;
 import com.samedconnect.pharmacy_backend.utils.Response;
 import jakarta.validation.Valid;
@@ -56,4 +57,27 @@ public class PaymentController {
                 paymentService.getPaymentByOrderId(orderId)
         );
     }
+    @PutMapping("/{id}/status")
+    public Response<PaymentResponse> updatePaymentStatus(
+            @PathVariable Long id,
+            @RequestParam Payment.PaymentStatus status) {
+
+        return Response.success(
+                "Payment status updated successfully",
+                paymentService.updatePaymentStatus(id, status)
+        );
+    }
+
+    @DeleteMapping("/{id}")
+    public Response<Void> deletePayment(
+            @PathVariable Long id) {
+
+        paymentService.deletePayment(id);
+
+        return Response.success(
+                "Payment deleted successfully",
+                null
+        );
+    }
+
 }
