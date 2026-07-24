@@ -8,7 +8,6 @@ import com.samedconnect.pharmacy_backend.entity.UserProfile;
 import com.samedconnect.pharmacy_backend.exception.BadRequestException;
 import com.samedconnect.pharmacy_backend.repository.UserProfileRepository;
 import com.samedconnect.pharmacy_backend.repository.UserRepository;
-import com.samedconnect.pharmacy_backend.security.jwt.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -28,12 +27,13 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        // Check if username exists
+
+        // Check if username already exists
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new BadRequestException("Username already exists");
         }
 
-        // Check if email exists
+        // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new BadRequestException("Email already exists");
         }
@@ -42,15 +42,19 @@ public class AuthService {
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));  // BCrypt encrypt
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFullName(request.getFullName());
         user.setPhoneNumber(request.getPhoneNumber());
-        user.setRole(User.Role.CUSTOMER);  // Default role
+
+        // Default role for all new registrations
+        user.setRole(User.Role.CUSTOMER);
+
         user.setIsActive(true);
 
+        // Save user
         User savedUser = userRepository.save(user);
 
-        // Create user profile
+        // Create associated profile
         UserProfile profile = new UserProfile();
         profile.setUser(savedUser);
         profile.setIdNumber(request.getIdNumber());
@@ -62,19 +66,20 @@ public class AuthService {
 
         userProfileRepository.save(profile);
 
-        // Generate JWT token
-        String token = jwtService.generateToken(user);
+        // Generate JWT
+        String token = jwtService.generateToken(savedUser);
 
         return AuthResponse.builder()
                 .token(token)
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .role(user.getRole().name())
+                .username(savedUser.getUsername())
+                .email(savedUser.getEmail())
+                .role(savedUser.getRole().name())
+                .fullName(savedUser.getFullName())
                 .build();
     }
 
     public AuthResponse login(LoginRequest request) {
-        // Authenticate user
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUsername(),
@@ -82,11 +87,9 @@ public class AuthService {
                 )
         );
 
-        // Get user
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new BadRequestException("User not found"));
 
-        // Generate JWT token
         String token = jwtService.generateToken(user);
 
         return AuthResponse.builder()
@@ -94,6 +97,7 @@ public class AuthService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .role(user.getRole().name())
+                .fullName(user.getFullName())
                 .build();
     }
 }

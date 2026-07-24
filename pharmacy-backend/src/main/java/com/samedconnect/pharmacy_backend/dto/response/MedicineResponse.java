@@ -11,6 +11,8 @@ public record MedicineResponse(
         String description,
         BigDecimal price,
         Integer stockQuantity,
+        Boolean isArchived,
+        Boolean requiresPrescription,
         LocalDate expiryDate,
         LocalDateTime createdAt,
         LocalDateTime updatedAt

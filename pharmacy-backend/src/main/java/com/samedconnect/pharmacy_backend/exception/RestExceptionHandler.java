@@ -8,7 +8,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.util.stream.Collectors;
 
-@RestControllerAdvice
+//@RestControllerAdvice
+@Deprecated
 public class RestExceptionHandler {
 
     @ExceptionHandler(MedicineNotFoundException.class)

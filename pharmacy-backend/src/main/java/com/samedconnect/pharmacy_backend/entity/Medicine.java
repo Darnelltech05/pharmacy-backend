@@ -57,6 +57,14 @@ public class Medicine {
     @Column(nullable = false)
     private Integer stockQuantity;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isArchived = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean requiresPrescription = false;
+
     @NotNull(message = "Expiry date is required")
     @FutureOrPresent(message = "Expiry date cannot be in the past")
     @Column(nullable = false)

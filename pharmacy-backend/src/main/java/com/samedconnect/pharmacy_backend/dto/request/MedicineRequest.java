@@ -26,6 +26,10 @@ public record MedicineRequest(
         @PositiveOrZero(message = "Stock quantity cannot be negative")
         Integer stockQuantity,
 
+        Boolean isArchived,
+
+        Boolean requiresPrescription,
+
         @NotNull(message = "Expiry date is required")
         @FutureOrPresent(message = "Expiry date cannot be in the past")
         LocalDate expiryDate

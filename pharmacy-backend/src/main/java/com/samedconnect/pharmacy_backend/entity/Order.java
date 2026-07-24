@@ -3,21 +3,19 @@ package com.samedconnect.pharmacy_backend.entity;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Data
 @Entity
-@Table(name = "orders")
-@Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Table(name = "orders")
 public class Order {
 
     @Id
@@ -41,50 +39,39 @@ public class Order {
     @Column(nullable = false)
     private OrderStatus status;
 
-    @Column(name = "shipping_address", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "shipping_address", nullable = false)
     private String shippingAddress;
 
-    @Column(name = "clinic_pickup_location")
+    @Column(name = "clinic_pickup_location", nullable = false)
     private String clinicPickupLocation;
 
-    @OneToMany(
-            mappedBy = "order",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> orderItems;
 
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "prescription_url")
+    private String prescriptionUrl;
+
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "updated_at", nullable = false)
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    public enum OrderStatus {
+        PENDING, PAID, PROCESSING, SHIPPED, DELIVERED
+    }
 
     @PrePersist
     protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        createdAt = now;
-        updatedAt = now;
-
-        if (orderDate == null) {
-            orderDate = now;
-        }
-
-        if (status == null) {
-            status = OrderStatus.PENDING;
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+        if (totalAmount == null) {
+            totalAmount = BigDecimal.ZERO;
         }
     }
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
-
-    public enum OrderStatus {
-        PENDING,
-        PAID,
-        PROCESSING,
-        SHIPPED,
-        DELIVERED
     }
 }

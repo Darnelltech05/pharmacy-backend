@@ -12,4 +12,6 @@ public interface MedicineRepository extends JpaRepository<Medicine, Long> {
     List<Medicine> findByCategoryContainingIgnoreCase(String category);
 
     List<Medicine> findByNameContainingIgnoreCaseAndCategoryContainingIgnoreCase(String name, String category);
+
+    List<Medicine> findByStockQuantityLessThanEqual(int threshold);
 }

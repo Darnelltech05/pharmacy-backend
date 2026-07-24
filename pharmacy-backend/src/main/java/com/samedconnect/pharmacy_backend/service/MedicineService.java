@@ -26,6 +26,8 @@ public class MedicineService {
                 .description(request.description())
                 .price(request.price())
                 .stockQuantity(request.stockQuantity())
+                .isArchived(request.isArchived() != null ? request.isArchived() : false)
+                .requiresPrescription(request.requiresPrescription() != null ? request.requiresPrescription() : false)
                 .expiryDate(request.expiryDate())
                 .build();
 
@@ -53,6 +55,8 @@ public class MedicineService {
         medicine.setDescription(request.description());
         medicine.setPrice(request.price());
         medicine.setStockQuantity(request.stockQuantity());
+        if (request.isArchived() != null) medicine.setIsArchived(request.isArchived());
+        if (request.requiresPrescription() != null) medicine.setRequiresPrescription(request.requiresPrescription());
         medicine.setExpiryDate(request.expiryDate());
 
         return toResponse(medicineRepository.save(medicine));
@@ -61,7 +65,8 @@ public class MedicineService {
     @Transactional
     public void deleteMedicine(Long id) {
         Medicine medicine = findMedicine(id);
-        medicineRepository.delete(medicine);
+        medicine.setIsArchived(true);
+        medicineRepository.save(medicine);
     }
 
     @Transactional(readOnly = true)
@@ -114,6 +119,14 @@ public class MedicineService {
         return toResponse(medicineRepository.save(medicine));
     }
 
+    @Transactional(readOnly = true)
+    public List<MedicineResponse> getLowStockMedicines(int threshold) {
+        return medicineRepository.findByStockQuantityLessThanEqual(threshold)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
     private Medicine findMedicine(Long id) {
         return medicineRepository.findById(id)
                 .orElseThrow(() -> new MedicineNotFoundException(id));
@@ -134,6 +147,8 @@ public class MedicineService {
                 medicine.getDescription(),
                 medicine.getPrice(),
                 medicine.getStockQuantity(),
+                medicine.getIsArchived(),
+                medicine.getRequiresPrescription(),
                 medicine.getExpiryDate(),
                 medicine.getCreatedAt(),
                 medicine.getUpdatedAt()
