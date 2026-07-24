@@ -1,4 +1,4 @@
-package com.samedconnect.pharmacy_backend.security.config;
+package com.samedconnect.pharmacy_backend.config;
 
 import com.samedconnect.pharmacy_backend.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
@@ -33,29 +33,65 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable())  // Disable CSRF (we use JWT)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))  // Allow frontend
+                // ✅ DISABLE CSRF COMPLETELY
+                .csrf(csrf -> csrf.disable())
+
+                // ✅ ENABLE CORS
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+
+                // ✅ AUTHORIZE REQUESTS
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**").permitAll()  // Public: register, login
-                        .anyRequest().authenticated()  // Everything else needs authentication
+                        .requestMatchers("/auth/**").permitAll()   // ✅ Allow registration & login
+                        .requestMatchers("/public/**").permitAll() // ✅ Allow public endpoints
+                        .anyRequest().authenticated()              // ✅ All other endpoints need auth
                 )
+
+                // ✅ STATELESS SESSION
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // No sessions
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
+
+                // ✅ AUTHENTICATION PROVIDER
                 .authenticationProvider(authenticationProvider())
+
+                // ✅ ADD JWT FILTER BEFORE UsernamePasswordAuthenticationFilter
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // CORS configuration (allow frontend to communicate)
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000"));  // React frontend
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("*"));
+
+        // ✅ ALLOW FRONTEND ORIGINS
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:3000",
+                "http://127.0.0.1:3000",
+                "http://localhost:3001"
+        ));
+
+        // ✅ ALLOW ALL HTTP METHODS
+        configuration.setAllowedMethods(Arrays.asList(
+                "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH", "HEAD"
+        ));
+
+        // ✅ ALLOW ALL HEADERS
+        configuration.setAllowedHeaders(Arrays.asList(
+                "Authorization",
+                "Content-Type",
+                "Accept",
+                "Origin",
+                "X-Requested-With",
+                "Access-Control-Request-Method",
+                "Access-Control-Request-Headers"
+        ));
+
+        // ✅ ALLOW CREDENTIALS
         configuration.setAllowCredentials(true);
+
+        // ✅ CACHE PREFLIGHT REQUESTS FOR 1 HOUR
+        configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -77,6 +113,6 @@ public class SecurityConfig {
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();  // Secure password hashing
+        return new BCryptPasswordEncoder();
     }
 }

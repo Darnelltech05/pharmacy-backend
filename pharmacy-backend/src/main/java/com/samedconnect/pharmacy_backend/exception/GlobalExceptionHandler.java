@@ -33,16 +33,16 @@ public class GlobalExceptionHandler {
     }
 
     // Handle resource not found
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<Response<Void>> handleResourceNotFound(ResourceNotFoundException ex) {
+    @ExceptionHandler({ResourceNotFoundException.class, MedicineNotFoundException.class})
+    public ResponseEntity<Response<Void>> handleResourceNotFound(RuntimeException ex) {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(Response.error(ex.getMessage()));
     }
 
     // Handle bad request
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Response<Void>> handleBadRequest(BadRequestException ex) {
+    @ExceptionHandler({BadRequestException.class, InvalidStockOperationException.class})
+    public ResponseEntity<Response<Void>> handleBadRequest(RuntimeException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(Response.error(ex.getMessage()));

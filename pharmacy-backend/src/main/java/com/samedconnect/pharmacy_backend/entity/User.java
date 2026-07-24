@@ -30,7 +30,7 @@ public class User implements UserDetails {
     private String email;
 
     @Column(nullable = false)
-    private String password;  // Will be BCrypt encrypted
+    private String password;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -40,7 +40,7 @@ public class User implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Role role;  // CUSTOMER, PHARMACIST, ADMIN
+    private Role role;
 
     @Column(name = "is_active")
     private Boolean isActive = true;
@@ -51,7 +51,6 @@ public class User implements UserDetails {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    // Auto-set timestamps
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
@@ -63,17 +62,25 @@ public class User implements UserDetails {
         updatedAt = LocalDateTime.now();
     }
 
-    // Role enum
     public enum Role {
         CUSTOMER,
         PHARMACIST,
         ADMIN
     }
 
-    // Spring Security methods
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+    }
+
+    @Override
+    public String getPassword() {
+        return password;
+    }
+
+    @Override
+    public String getUsername() {
+        return username;
     }
 
     @Override
@@ -93,6 +100,6 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return isActive;
+        return Boolean.TRUE.equals(isActive);
     }
 }
